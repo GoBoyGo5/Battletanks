@@ -5,18 +5,3 @@ body {
 canvas {
 	display: block;
 }
-
-#info {
-  position: absolute;
-  top: 10px;
-  width: 100%;
-  text-align: center;
-  z-index: 100;
-  display: block;
-}
-
-#game {
-  width: 50em;
-  background-color: #00ff00;
-  height: 50em;
-}
