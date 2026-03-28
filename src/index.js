@@ -51,8 +51,8 @@ tank select with team is if take 1 then cant take same
 */
 
 import * as THREE from "https://unpkg.com/three/build/three.module.js";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from "https://unpkg.com/three/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from 'https://unpkg.com/three/examples/jsm/controls/OrbitControls.js';
 // import { PositionalAudioHelper } from 'three/addons/helpers/PositionalAudioHelper.js';
 
 const keys = {};
