@@ -50,7 +50,7 @@ tank select screen
 tank select with team is if take 1 then cant take same
 */
 
-import * as THREE from "three";
+import * as THREE from "https://unpkg.com/three/build/three.module.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 // import { PositionalAudioHelper } from 'three/addons/helpers/PositionalAudioHelper.js';
@@ -85,12 +85,13 @@ function init() {
   document.body.appendChild( renderer.domElement );
 
   clock = new THREE.Clock();
+  //clock.connect( document );
 
   camera.position.set(0, 10, 0);
   camera.rotation.x = -Math.PI / 2;
 
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enablePan = false;
@@ -710,6 +711,7 @@ function AI_gotoNode(tank, node, delta) {
       AI_moveForward(tank, delta);
       
       const now = clock.getElapsedTime();
+      // const now = clock.getElapsed();
 
       if (now - tank.lastPosTime > 1) {
         const moved = tank.lastPos.distanceTo(tank.model.position);
