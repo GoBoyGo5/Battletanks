@@ -1,17 +1,13 @@
 /*
-//ADD: decals when projectile hits wall
-//directional ambient noises
-implement gamemodes
+// NEED TO FIND GOOD DECAL PNG //ADD: decals when projectile hits wall
+// CANT DEBUG WITH BROKEN SOUND //directional ambient noises
+// KINDA? // implement Gamemodes
 implement teams
 make basic gui:
 make ai shoot if 90 degree cone detects an enemy shoots at it:
-make random spawn:
 prebake 1 map
-sun light different angle
-tank death for FREE FOR ALL mode
-make FREE FOR ALL mode add
-win screen for gui FFA
-AMBIENT SOUNDS IN MAP
+// KINDA? // win screen for gui FFA
+// CANT DEBUG WITH BROKEN SOUND //AMBIENT SOUNDS IN MAP
 ACTUALLY IMPLEMENT BLOCKED NODE TANK AI BEHAVIOUR
 
 
@@ -50,13 +46,14 @@ damage upgrades
 bullets upgrade etc
 to the tank ofc
 implement different types of tank ais aggression levels and points to which tag node they go best
-
+tank select screen
+tank select with team is if take 1 then cant take same
 */
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { PositionalAudioHelper } from 'three/addons/helpers/PositionalAudioHelper.js';
+// import { PositionalAudioHelper } from 'three/addons/helpers/PositionalAudioHelper.js';
 
 const keys = {};
 const walls = [];
@@ -65,7 +62,7 @@ const nodes = [];
 
 let scene, camera, renderer, clock, controls, listener, audioLoader;
 
-const gamemodes = {
+const Gamemodes = {
   DM: "deathmatch",
   TEAM_DM: "team_deathmatch",
   CTF: "capture_the_flag",
@@ -74,11 +71,10 @@ const gamemodes = {
   TEAMS_2: "teams_of_2",
 }
 
-let gamemode = gamemodes.DEATHMATCH;
+let gamemode = Gamemodes.DM;
 
 function init() {
   
-  console.log(gamemode);
   scene = new THREE.Scene();
   scene.background = new THREE.Color( 0x80c0ff );
   camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -334,6 +330,13 @@ function repeatTexture(texture, repeat=10) {
 
 function makeRepeatTexture(name, repeat=10) {
   return repeatTexture(loadTexture(name), repeat);
+}
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }
 
 /*HELPER FUNCTIONS*/
@@ -876,7 +879,7 @@ function AI_update(tank, delta, target) {
 /*MAPS*/
 
 function MAP_plains() {
-  const sun = new THREE.DirectionalLight(0xffffff);
+  const sun = new THREE.DirectionalLight(0xffffff, 1);
 
   sun.position.set(5, 5, 5);
   sun.castShadow = true;
@@ -891,8 +894,8 @@ function MAP_plains() {
   scene.add(sun);
   scene.add(sun.target)
 
-  const helper = new THREE.DirectionalLightHelper( sun, 5 );
-  scene.add( helper );
+  // const helper = new THREE.DirectionalLightHelper( sun, 5 );
+  // scene.add( helper );
 
   const ambientLight = new THREE.AmbientLight(0x808080, 2);
   ambientLight.position.set(0, 1, 0);
@@ -917,8 +920,12 @@ function MAP_plains() {
   WORLD_addNodes(15, 15, 10, 20);
   WORLD_addNodes(15, 20, 15, 25);
 
-  FACTORY_tank(0, 0, true, true);
-  FACTORY_tank(5, 5, false, true);
+  // FACTORY_tank(0, 0, true, true);
+  // FACTORY_tank(5, 5, false, true);
+
+  const spawns = [ [0,0], [5, 5] ];
+
+  GAME_spawnTanks(spawns);
 }
 
 /*MAPS*/
@@ -929,7 +936,7 @@ function MAP_plains() {
 
 function GAME_gameMode() {
   switch (gamemode) {
-    case gamemodes.DM:
+    case Gamemodes.DM:
       let aliveCount = 0;
 
       for (const tank of tanks) {
@@ -944,18 +951,34 @@ function GAME_gameMode() {
       }
       
       break;
-    case gamemodes.TEAM_DM:
+    case Gamemodes.TEAM_DM:
       break;
-    case gamemodes.CTF:
+    case Gamemodes.CTF:
       break;
-    case gamemodes.SURVIVAL:
+    case Gamemodes.SURVIVAL:
       break;
-    case gamemodes.KOTH:
+    case Gamemodes.KOTH:
       break;
-    case gamemodes.TEAMS_2:
+    case Gamemodes.TEAMS_2:
       break;
   }
 }
+
+function GAME_spawnTanks(spawns) {
+
+  const shuffled = [...spawns];
+  shuffle(shuffled);
+
+  for (let i=0; i < spawns.length; i++) {
+    const [x, y] = shuffled[i];
+
+    const isPlayer = (i === 0);
+    const debug = true;
+
+    FACTORY_tank(x, y, isPlayer, debug);
+  }
+}
+
 
 /*GAME*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////
