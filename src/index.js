@@ -139,7 +139,7 @@ function FACTORY_tank(positionX=0, positionZ=0, isPlayer=false, debug=false) {
   };
 
   const loader = new GLTFLoader();
-  loader.load("/assets/tank/tank.glb", gltf => {
+  loader.load("/Battletanks/assets/tank/tank.glb", gltf => {
     tank.model = gltf.scene;
     tank.model.scale.set(10, 10, 10);
     tank.model.position.set(positionX, 0, positionZ);
@@ -167,70 +167,70 @@ function FACTORY_tank(positionX=0, positionZ=0, isPlayer=false, debug=false) {
     const explosion5 = new THREE.PositionalAudio(listener);
     const explosion6 = new THREE.PositionalAudio(listener);
 
-    audioLoader.load('/assets/sounds/explosion-1.mp3', buffer => {
+    audioLoader.load('/Battletanks/assets/sounds/explosion-1.mp3', buffer => {
     explosion1.setBuffer(buffer);
     explosion1.setLoop(false);
     explosion1.setVolume(0.5);
     explosion1.setRefDistance(5);
   });
 
-  audioLoader.load('/assets/sounds/explosion-2.mp3', buffer => {
+  audioLoader.load('/Battletanks/assets/sounds/explosion-2.mp3', buffer => {
     explosion2.setBuffer(buffer);
     explosion2.setLoop(false);
     explosion2.setVolume(0.5);
     explosion2.setRefDistance(5);
   });
 
-  audioLoader.load('/assets/sounds/explosion-3.mp3', buffer => {
+  audioLoader.load('/Battletanks/assets/sounds/explosion-3.mp3', buffer => {
     explosion3.setBuffer(buffer);
     explosion3.setLoop(false);
     explosion3.setVolume(0.5);
     explosion3.setRefDistance(5);
   });
 
-  audioLoader.load('/assets/sounds/explosion-4.mp3', buffer => {
+  audioLoader.load('/Battletanks/assets/sounds/explosion-4.mp3', buffer => {
     explosion4.setBuffer(buffer);
     explosion4.setLoop(false);
     explosion4.setVolume(0.5);
     explosion4.setRefDistance(5);
   });
 
-  audioLoader.load('/assets/sounds/explosion-5.mp3', buffer => {
+  audioLoader.load('/Battletanks/assets/sounds/explosion-5.mp3', buffer => {
     explosion5.setBuffer(buffer);
     explosion5.setLoop(false);
     explosion5.setVolume(0.5);
     explosion5.setRefDistance(5);
   });
 
-  audioLoader.load('/assets/sounds/explosion-6.mp3', buffer => {
+  audioLoader.load('/Battletanks/assets/sounds/explosion-6.mp3', buffer => {
     explosion6.setBuffer(buffer);
     explosion6.setLoop(false);
     explosion6.setVolume(0.5);
     explosion6.setRefDistance(5);
   });
 
-    audioLoader.load('/assets/sounds/tank-reload.mp3', function(buffer) {
+    audioLoader.load('/Battletanks/assets/sounds/tank-reload.mp3', function(buffer) {
       reload.setBuffer(buffer);
       reload.setLoop(false);
       reload.setVolume(0.5);
       reload.setRefDistance(5);
     });
 
-    audioLoader.load('/assets/sounds/tank-move.mp3', function(buffer) {
+    audioLoader.load('/Battletanks/assets/sounds/tank-move.mp3', function(buffer) {
       move.setBuffer(buffer);
       move.setLoop(true);
       move.setVolume(0.5);
       move.setRefDistance(5);
     });
 
-    audioLoader.load('/assets/sounds/tank-idle.mp3', function(buffer) {
+    audioLoader.load('/Battletanks/assets/sounds/tank-idle.mp3', function(buffer) {
       idle.setBuffer(buffer);
       idle.setLoop(true);
       idle.setVolume(0.5);
       idle.setRefDistance(5);
     });
 
-    audioLoader.load('/assets/sounds/tank-shot.mp3', function(buffer) {
+    audioLoader.load('/Battletanks/assets/sounds/tank-shot.mp3', function(buffer) {
       shoot.setBuffer(buffer);
       shoot.setLoop(false);
       shoot.setVolume(0.5);
@@ -315,7 +315,7 @@ function FACTORY_node(positionX=0, positionZ=0) {
 /*HELPER FUNCTIONS*/
 
 function loadTexture(name) {
-  return new THREE.TextureLoader().load(`/assets/textures/${name}.png`);
+  return new THREE.TextureLoader().load(`/Battletanks/assets/textures/${name}.png`);
 }
 
 function repeatTexture(texture, repeat=10) {
