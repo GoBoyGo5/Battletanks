@@ -63,11 +63,11 @@ let scene, camera, renderer, clock, controls, listener, audioLoader;
 
 const Gamemodes = {
   DM: "deathmatch",
-  TEAM_DM: "team_deathmatch",
+  TM_DM: "team_deathmatch",
   CTF: "capture_the_flag",
   SURVIVAL: "survival",
   KOTH: "koth",
-  TEAMS_2: "teams_of_2",
+  TM_2: "teams_of_2",
 }
 
 let gamemode = Gamemodes.DM;
@@ -121,7 +121,7 @@ function FACTORY_tank(positionX=0, positionZ=0, isPlayer=false, debug=false) {
     shootCooldown: 0,
     health: 3,
     projectiles: [],
-    moveSpeed: 1,
+    moveSpeed: 2,
     turnSpeed: 1,
     alive: true,
     isMoving: false,
@@ -362,11 +362,35 @@ function WORLD_addTexturedPlane(texture, width=100, height=100, posX=0, posY=0, 
   return mesh;
 }
 
-function WORLD_addTexturedBox(texture, width=100, height=100, depth=100, posX=0, posY=0, posZ=0, rotX=0, rotY=0, rotZ=0, colorTexture=0xffffff) {
+function WORLD_addTexturedBox(width=100, height=100, depth=100, posX=0, posY=0, posZ=0, front, back, left, right, top, bottom, repeatMultiplier=10, rotX=0, rotY=0, rotZ=0, colorTexture=0xffffff) {
 
-  const material = new THREE.MeshStandardMaterial({ map: texture, color: colorTexture });
+  function makeMat(tex, repeatX, repeatY) {
+    if (!tex) {
+      return new THREE.MeshStandardMaterial({ color: colorTexture });
+    }
+
+    const t = tex.clone();
+
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = THREE.RepeatWrapping;
+    t.wrapT = THREE.RepeatWrapping;
+
+    t.repeat.set(repeatX / repeatMultiplier, repeatY / repeatMultiplier);
+
+    return new THREE.MeshStandardMaterial({ map: t, color: colorTexture });
+  }
+
+  const materials = [
+    makeMat(right, depth, height),   // +X
+    makeMat(left, depth, height),    // -X
+    makeMat(top, width, depth),      // +Y
+    makeMat(bottom, width, depth),   // -Y
+    makeMat(front, width, height),   // +Z
+    makeMat(back, width, height)     // -Z
+  ];
+
   const geometry = new THREE.BoxGeometry(width, height, depth);
-  const mesh = new THREE.Mesh(geometry, material);
+  const mesh = new THREE.Mesh(geometry, materials);
 
   mesh.rotation.set(rotX, rotY, rotZ);
   mesh.position.set(posX, posY, posZ);
@@ -379,8 +403,8 @@ function WORLD_addTexturedBox(texture, width=100, height=100, depth=100, posX=0,
   return mesh;
 }
 
-function WORLD_addWall(texture, width=100, height=100, depth=100, posX=0, posY=0, posZ=0, rotX=0, rotY=0, rotZ=0, colorTexture=0xffffff) {
-  const wall = WORLD_addTexturedBox(texture, width, height, depth, posX, posY, posZ, rotX, rotY, rotZ, colorTexture);
+function WORLD_addWall(width=100, height=100, depth=100, posX=0, posY=0, posZ=0, front, back, left, right, top, bottom, repeatMultiplier, rotX=0, rotY=0, rotZ=0, colorTexture=0xffffff) {
+  const wall = WORLD_addTexturedBox(width, height, depth, posX, posY, posZ, front, back, left, right, top, bottom, repeatMultiplier, rotX, rotY, rotZ, colorTexture);
   walls.push(wall);
 
   return wall;
@@ -389,10 +413,14 @@ function WORLD_addWall(texture, width=100, height=100, depth=100, posX=0, posY=0
 function WORLD_addNodes(posX1, posZ1, posX2, posZ2) {
   NODE_connect(FACTORY_node(posX1, posZ1), FACTORY_node(posX2, posZ2));
 
-  const n1 = makeRepeatTexture("n1", 1);
-  const n2 = makeRepeatTexture("n2", 1);
-  WORLD_addTexturedBox(n1, 1, 1, 1, posX1, 0, posZ1);
-  WORLD_addTexturedBox(n2, 1, 1, 1, posX2, 0, posZ2);
+  const debug = false;
+
+  if (debug) {
+    const n1 = loadTexture("n1");
+    const n2 = loadTexture("n2");
+    WORLD_addTexturedBox(1, 1, 1, posX1, 0, posZ1, n1, n1, n1, n1, n1, n1, 1);
+    WORLD_addTexturedBox(1, 1, 1, posX2, 0, posZ2, n2, n2, n2, n2, n2, n2, 1);
+  }
 }
 
 /*WORLD-BUILDING FUNCTIONS*/
@@ -881,13 +909,12 @@ function AI_update(tank, delta, target) {
 function MAP_plains() {
   const sun = new THREE.DirectionalLight(0xffffff, 1);
 
-  sun.position.set(5, 5, 5);
+  sun.position.set(30, 15, 5);
   sun.castShadow = true;
   sun.shadow.camera.left = -25;
   sun.shadow.camera.right = 25;
   sun.shadow.camera.top = 25;
   sun.shadow.camera.bottom = -25;
-  sun.shadow.camera.near = -25;
   sun.shadow.mapSize.width = 2048;
   sun.shadow.mapSize.height = 2048;
   sun.target.position.set(0, 0, 0);
@@ -897,33 +924,43 @@ function MAP_plains() {
   // const helper = new THREE.DirectionalLightHelper( sun, 5 );
   // scene.add( helper );
 
-  const ambientLight = new THREE.AmbientLight(0x808080, 2);
+  const ambientLight = new THREE.AmbientLight(0xc0c0c0, 1);
   ambientLight.position.set(0, 1, 0);
   scene.add(ambientLight);
 
-  const grassTexture = makeRepeatTexture("grass", 64);
-  const concreteTexture = makeRepeatTexture("concrete", 0.5);
+  const grassTexture = makeRepeatTexture("grass", 10);
+  const concreteTexture = loadTexture("concrete"); // WORLD_addTexturedBox
+  const buildingTexture = loadTexture("building"); // WORLD_addTexturedBox
 
   const floor = WORLD_addTexturedPlane(grassTexture, 50, 50, 0, 0, 0, -Math.PI/2, 0, 0, 0xffffff);
   floor.castShadow = false;
-  WORLD_addWall(concreteTexture, 50, 2, 5, 0, 1, -25);
-  WORLD_addWall(concreteTexture, 50, 2, 5, 0, 1, 25);
-  WORLD_addWall(concreteTexture, 5, 2, 50, 25, 1, 0);
-  WORLD_addWall(concreteTexture, 5, 2, 50, -25, 1, 0);
-  //WORLD_addWall(concreteTexture, 5, 2, 20, 10, 1, 0);
 
-  WORLD_addNodes(0, 0, 5, 5);
-  WORLD_addNodes(5, 5, 10, 10);
-  WORLD_addNodes(15, 15, -5, -5);
-  WORLD_addNodes(5, 5, 5, 10);
-  WORLD_addNodes(10, 10, 10, 15);
-  WORLD_addNodes(15, 15, 10, 20);
-  WORLD_addNodes(15, 20, 15, 25);
+  // OUTER WALLS
+  WORLD_addWall(50, 2, 5, 0, 1, -25, concreteTexture, concreteTexture, concreteTexture, concreteTexture, concreteTexture, concreteTexture, 1);
+  WORLD_addWall(50, 2, 5, 0, 1, 25, concreteTexture, concreteTexture, concreteTexture, concreteTexture, concreteTexture, concreteTexture, 1);
+  WORLD_addWall(5, 2, 50, 25, 1, 0, concreteTexture, concreteTexture, concreteTexture, concreteTexture, concreteTexture, concreteTexture, 1);
+  WORLD_addWall(5, 2, 50, -25, 1, 0, concreteTexture, concreteTexture, concreteTexture, concreteTexture, concreteTexture, concreteTexture, 1);
 
-  // FACTORY_tank(0, 0, true, true);
-  // FACTORY_tank(5, 5, false, true);
+  // MAP WALLS (Buildings)
+  WORLD_addWall(10, 10, 10, 15, 1, 10, buildingTexture, buildingTexture, buildingTexture, buildingTexture, concreteTexture, concreteTexture, 4);
+  WORLD_addWall(10, 10, 10, 0, 1, 10, buildingTexture, buildingTexture, buildingTexture, buildingTexture, concreteTexture, concreteTexture, 4);
+  WORLD_addWall(10, 10, 10, -15, 1, 10, buildingTexture, buildingTexture, buildingTexture, buildingTexture, concreteTexture, concreteTexture, 4);
 
-  const spawns = [ [0,0], [5, 5] ];
+  WORLD_addWall(10, 10, 10, 15, 1, -10, buildingTexture, buildingTexture, buildingTexture, buildingTexture, concreteTexture, concreteTexture, 4);
+  WORLD_addWall(10, 10, 10, 0, 1, -10, buildingTexture, buildingTexture, buildingTexture, buildingTexture, concreteTexture, concreteTexture, 4);
+  WORLD_addWall(10, 10, 10, -15, 1, -10, buildingTexture, buildingTexture, buildingTexture, buildingTexture, concreteTexture, concreteTexture, 4);
+
+  // NODES
+  WORLD_addNodes(21, 17, 21, 3);
+  WORLD_addNodes(7, 17, 7, 3);
+  WORLD_addNodes(-7, 17, -7, 3);
+  WORLD_addNodes(-21, 17, -21, 3);
+  WORLD_addNodes(-21, -17, -21, -3);
+  WORLD_addNodes(-7, -17, -7, -3);
+  WORLD_addNodes(7, -17, 7, -3);
+  WORLD_addNodes(21, -17, 21, -3);
+
+  const spawns = [ [0,0], [-20, 0] ];
 
   GAME_spawnTanks(spawns);
 }
@@ -951,7 +988,7 @@ function GAME_gameMode() {
       }
       
       break;
-    case Gamemodes.TEAM_DM:
+    case Gamemodes.TM_DM:
       break;
     case Gamemodes.CTF:
       break;
@@ -959,7 +996,7 @@ function GAME_gameMode() {
       break;
     case Gamemodes.KOTH:
       break;
-    case Gamemodes.TEAMS_2:
+    case Gamemodes.TM_2:
       break;
   }
 }
@@ -973,7 +1010,7 @@ function GAME_spawnTanks(spawns) {
     const [x, y] = shuffled[i];
 
     const isPlayer = (i === 0);
-    const debug = true;
+    const debug = false;
 
     FACTORY_tank(x, y, isPlayer, debug);
   }
@@ -1006,12 +1043,18 @@ document.getElementById("start").addEventListener("click", () => {
 
 function render() {
 
+
+  
+
   if (!clock) return;
   const delta = clock.getDelta();
 
   const playerTank = tanks.find(t => t.isPlayer);
 
+
+
   if (!playerTank || !playerTank.model) return;
+  //console.log(playerTank.model.position);
 
   TANK_controls(playerTank, delta);
 
